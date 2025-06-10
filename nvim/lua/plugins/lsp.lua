@@ -23,10 +23,6 @@ return{
           "asm_lsp",
           "clangd",
           "glsl_analyzer",
-          "cmake",
-          "lua_ls",
-          "texlab",
-          "basedpyright",
         },
         automatic_installation = true,
         automatic_enable = false,
@@ -44,6 +40,29 @@ return{
       local lspconfig = require("lspconfig")
       local cmp_nvim_lsp = require("cmp_nvim_lsp")
       local capabilities = cmp_nvim_lsp.default_capabilities()
+
+      local on_attach = function(client, bufnr)
+        -- Enable completion triggered by <c-x><c-o>
+        vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+        local opts = { noremap=true, silent=true }
+
+        -- Mappings.
+        -- See `:help vim.lsp.*` for documentation on any of the below functions
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gD', '<cmd>lua vim.lsp.buf.declaration()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gd', '<cmd>lua vim.lsp.buf.definition()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', 'K', '<cmd>lua vim.lsp.buf.hover()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gi', '<cmd>lua vim.lsp.buf.implementation()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', 's', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'i', ',s', '<cmd>lua vim.lsp.buf.signature_help()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', ',wa', '<cmd>lua vim.lsp.buf.add_workspace_folder()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', ',wr', '<cmd>lua vim.lsp.buf.remove_workspace_folder()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', ',wl', '<cmd>lua print(vim.inspect(vim.lsp.buf.list_workspace_folders()))<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', ',D', '<cmd>lua vim.lsp.buf.type_definition()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', ',rn', '<cmd>lua vim.lsp.buf.rename()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', ',qf', '<cmd>lua vim.lsp.buf.code_action()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', 'gr', '<cmd>lua vim.lsp.buf.references()<CR>', opts)
+        vim.api.nvim_buf_set_keymap(bufnr, 'n', ',f', '<cmd>lua vim.lsp.buf.formatting()<CR>', opts)
+      end,
 
       vim.filetype.add({
         extension = {
@@ -84,34 +103,16 @@ return{
           "--function-arg-placeholders=0",
           "--completion-style=detailed",
         },
-        filetypes = { "c", "cpp", "objc", "objcpp" },
-        root_dir = require("lspconfig").util.root_pattern("src"),
+        filetypes = {"h", "c", "cpp"},
+        root_dir = require('lspconfig').util.root_pattern("compile_commands.json", ".git", "Makefile"),
         capabilities = capabilities,
         on_attach = on_attach,
       })
 
       lspconfig["glsl_analyzer"].setup({
         cmd = { "glsl_analyzer" },
-        filetypes = { "glsl" },
-        root_dir = lspconfig.util.root_pattern(".git", "."),
-        capabilities = capabilities,
-        on_attach = on_attach,
-      })
-
-      lspconfig["texlab"].setup({
-        capabilities = capabilities,
-        on_attach = on_attach,
-      })
-
-      lspconfig["basedpyright"].setup({
-        settings = {
-          basedpyright = {
-            analysis = {
-              typeCheckingMode = "off",
-              autoImportCompletions = true,
-            }
-          }
-        },
+        filetypes = {"glsl"},
+        root_dir = lspconfig.util.root_pattern(".git"),
         capabilities = capabilities,
         on_attach = on_attach,
       })
@@ -119,7 +120,7 @@ return{
       lspconfig["asm_lsp"].setup({
         capabilities = capabilities,
         on_attach = on_attach,
-        filetypes = { "asm", },
+        filetypes = {"asm"},
       })
     end,
   },
@@ -154,7 +155,7 @@ return{
           ['<C-f>'] = cmp.mapping.scroll_docs(4),
           ['<C-Space>'] = cmp.mapping.complete(),
           ['<C-e>'] = cmp.mapping.abort(),
-          ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+          ['<CR>'] = cmp.mapping.confirm({ select = true }),
         }),
         sources = cmp.config.sources({
           { name = 'nvim_lsp' },

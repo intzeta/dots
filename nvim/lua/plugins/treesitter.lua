@@ -5,15 +5,11 @@ return {
 			local treesitter = require("nvim-treesitter.configs")
 			treesitter.setup({
 				ensure_installed = {
-					"gitignore",
-					"json",
 					"cpp",
 					"c",
           "asm",
           "glsl",
           "make",
-          "markdown",
-          "python",
 				},
 				auto_install = false,
 				query_linter = {
